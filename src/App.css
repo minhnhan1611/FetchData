@@ -32,7 +32,24 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.card {
+  width: 320px;
+  height: 95%;
+  border: 1px solid black
+}
+
+.card img {
+  width: 320px;
+  height: 250px
+}
+
+.detail {
+  margin-left: 75%;
+  margin-bottom: 10px;
 }
