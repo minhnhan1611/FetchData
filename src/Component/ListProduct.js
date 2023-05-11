@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import CartModal from './CartModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToCart } from '../redux/CartReducer';
 
 export default function ListProduct() {
     const [product, setProduct] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
+
+    const cartItems = useSelector(state => state.cart.items);
+    const dispatch = useDispatch();
 
     const getProductData = async () => {
         const response = await fetch("https://dummyjson.com/products");
@@ -18,16 +24,17 @@ export default function ListProduct() {
         if (product.length > 0) {
             return product.map((product, index) => {
                 return (
-                    <div className="col-4" key={index}>
+                    <div className="col-6 col-md-4 col-lg-3" key={index}>
                         <div className="card text-left text-white bg-secondary mt-5">
                             <img className="card-img-top" src={product.thumbnail} alt={product.id} />
                             <div className="card-body">
                                 <h4 className="card-title">{product.title}</h4>
                                 <p className="card-text font-weight-bold">{product.price}$</p>
-                                <p className="card-text">{product.description}</p>
+                                <p className="card-text hidden-text">{product.description}</p>
                             </div>
-                            <div className='detail' >
+                            <div className='button-margin d-flex justify-content-between m-2'>
                                 <button className='btn btn-primary' data-toggle="modal" data-target="#modelId" onClick={() => setSelectedProduct(product)}>Detail</button>
+                                <button onClick={() => { handleAddToCart(product) }} className='btn btn-success'>Add To Cart</button>
                             </div>
                         </div>
                     </div>
@@ -36,10 +43,39 @@ export default function ListProduct() {
         }
     };
 
+    const handleAddToCart = (product) => {
+        const { id, title, thumbnail, price } = product;
+        const newProduct = {
+            id,
+            title,
+            thumbnail,
+            quantity: 1,
+            price
+        }
+        dispatch(addToCart(newProduct))
+    }
+
+    const renderQuantity = () => {
+        if (cartItems) {
+            const totalQuantity = cartItems.reduce((total, item) => {
+                return total + item.quantity;
+            }, 0);
+            return totalQuantity;
+        }
+        return 0;
+    }
+
     return (
         <div className='container'>
+            <h3 className='mt-5'>Danh Sách Sản Phẩm</h3>
+            <div className='text-right'>
+                <span className='cart-modal' data-toggle="modal" data-target="#cartModal">
+                    <i className="bx bx-cart bx-xs mr-5">(<i className='text-danger'>{renderQuantity()}</i>)Cart</i>
+                </span>
+            </div>
             <div className='row'>
                 {renderProduct()}
+                <CartModal />
             </div>
             {selectedProduct && (
                 <div className="modal fade show" id="modelId" tabIndex={-1} role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
@@ -47,7 +83,7 @@ export default function ListProduct() {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">Product Details</h5>
-                                <button type="button" className="close" data-dismiss="modal" aria-label="Close" onClick={() => setSelectedProduct(null)}>
+                                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
@@ -86,7 +122,7 @@ export default function ListProduct() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setSelectedProduct(null)}>Close</button>
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
